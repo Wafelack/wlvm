@@ -2,8 +2,10 @@ use crate::Instructions::*;
 use crate::Registers::*;
 
 mod parser;
+
+use parser::*;
 #[derive(Copy, Clone, Debug)]
-enum Instructions {
+pub enum Instructions {
     Psh(i32),
     Add(Registers, Registers),
     Mul(Registers, Registers),
@@ -18,7 +20,7 @@ enum Instructions {
     Peek,
 }
 #[derive(Copy, Clone, Debug)]
-enum Registers {
+pub enum Registers {
     A = 0,
     B = 1,
     C = 2,
@@ -95,7 +97,7 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
 }
 
 fn main() {
-    let program: Vec<Instructions> = vec![Psh(5), Mov(A, St), Psh(6), Mov(B, St), Add(A, B), Drg(A), Hlt];
+    let program: Vec<Instructions> = parse_file("example.vm");
 
     let mut running = true;
     let mut stack = vec![0;256];
