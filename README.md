@@ -31,3 +31,10 @@ There are 3 special registers :
 - drg \<register> : Prints the content of the specified register
 - peek : Prints the value of the st register
 - hlt : Stops the program
+- tee \<register_a> \<register_b> : Test if register_a == register_b
+- tne \<register_a> \<register_b> : Test if register_a != register_b
+- tll \<register_a> \<register_b> : Test if register_a < register_b
+- tmm \<register_a> \<register_b> : Test if register_a > register_b
+- tel \<register_a> \<register_b> : Test if register_a <= register_b 
+- tem \<register_a> \<register_b> : Test if register_a >= register_b
+- jmp \<instruction> : Jump to \<instruction> if Eq register is true

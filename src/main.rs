@@ -18,6 +18,13 @@ pub enum Instructions {
     Dst,
     Drg(Registers),
     Peek,
+    Tee(Registers, Registers), // ==
+    Tne(Registers, Registers), // !=
+    Tll(Registers, Registers), // <
+    Tmm(Registers, Registers), // >
+    Tel(Registers, Registers), // <=
+    Tem(Registers, Registers), // >=
+    Jmp(i32), // Jump to line if Eq is true
 }
 #[derive(Copy, Clone, Debug)]
 pub enum Registers {
@@ -30,7 +37,8 @@ pub enum Registers {
     Ip = 6,
     Sp = 7,
     St = 8,
-    NumOfRegisters = 9
+    Eq = 9,
+    NumOfRegisters = 10
 }
 
 fn fetch(program: &Vec<Instructions>, ip: usize) -> Instructions {
@@ -43,6 +51,29 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
     // Stack Pointer : regs[7]
 
     match instr {
+        Tee(a, b) => {
+            regs[Eq as usize] = (regs[a as usize] == regs[b as usize]) as i32;
+        }
+        Tne(a, b) => {
+            regs[Eq as usize] = (regs[a as usize] != regs[b as usize]) as i32;
+        }
+        Tll(a, b) => {
+            regs[Eq as usize] = (regs[a as usize] < regs[b as usize]) as i32;
+        }
+        Tmm(a, b) => {
+            regs[Eq as usize] = (regs[a as usize] > regs[b as usize]) as i32;
+        }
+        Tel(a, b) => {
+            regs[Eq as usize] = (regs[a as usize] <= regs[b as usize]) as i32;
+        }
+        Tem(a, b) => {
+            regs[Eq as usize] = (regs[a as usize] >= regs[b as usize]) as i32;
+        }
+        Jmp(i) => {
+            if regs[Eq as usize] == 1 {
+                regs[Ip as usize] = i;
+            }
+        }
         Hlt => *running = false,
         Psh(i) => {
             regs[7]+=1;

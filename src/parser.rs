@@ -30,6 +30,384 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
     if line.starts_with(";") { continue; }
 
     match splited[0] {
+      "tee" => {
+        if splited.len() < 3 {
+          error(ln, line, "Syntax error: valid syntax: `tee <register_a> <register_b>`");
+          had_error = true;
+          continue;
+        }
+
+        let raw_a = splited[1];
+        let raw_b = splited[2];
+
+        let reg_a = if raw_a == "a" {
+          A
+        } else if raw_a == "b" {
+          B
+        } else if raw_a == "c" {
+          C
+        } else if raw_a == "e" {
+          D
+        } else if raw_a == "d" {
+          E
+        } else if raw_a == "f" {
+          F
+        } else if raw_a == "ip" {
+          Ip
+        } else if raw_a == "sp" {
+          Sp
+        } else if raw_a == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
+          had_error = true;
+          continue;
+        };
+
+        let reg_b = if raw_b == "a" {
+          A
+        } else if raw_b == "b" {
+          B
+        } else if raw_b == "c" {
+          C
+        } else if raw_b == "e" {
+          D
+        } else if raw_b == "d" {
+          E
+        } else if raw_b == "f" {
+          F
+        } else if raw_b == "ip" {
+          Ip
+        } else if raw_b == "sp" {
+          Sp
+        } else if raw_b == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
+          had_error = true;
+          continue;
+        };
+
+        instrs.push(Tee(reg_a, reg_b));
+      }
+      "tne" => {
+        if splited.len() < 3 {
+          error(ln, line, "Syntax error: valid syntax: `tne <register_a> <register_b>`");
+          had_error = true;
+          continue;
+        }
+
+        let raw_a = splited[1];
+        let raw_b = splited[2];
+
+        let reg_a = if raw_a == "a" {
+          A
+        } else if raw_a == "b" {
+          B
+        } else if raw_a == "c" {
+          C
+        } else if raw_a == "e" {
+          D
+        } else if raw_a == "d" {
+          E
+        } else if raw_a == "f" {
+          F
+        } else if raw_a == "ip" {
+          Ip
+        } else if raw_a == "sp" {
+          Sp
+        } else if raw_a == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
+          had_error = true;
+          continue;
+        };
+
+        let reg_b = if raw_b == "a" {
+          A
+        } else if raw_b == "b" {
+          B
+        } else if raw_b == "c" {
+          C
+        } else if raw_b == "e" {
+          D
+        } else if raw_b == "d" {
+          E
+        } else if raw_b == "f" {
+          F
+        } else if raw_b == "ip" {
+          Ip
+        } else if raw_b == "sp" {
+          Sp
+        } else if raw_b == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
+          had_error = true;
+          continue;
+        };
+
+        instrs.push(Tne(reg_a, reg_b));
+      }
+      "tll" => {
+        if splited.len() < 3 {
+          error(ln, line, "Syntax error: valid syntax: `tll <register_a> <register_b>`");
+          had_error = true;
+          continue;
+        }
+
+        let raw_a = splited[1];
+        let raw_b = splited[2];
+
+        let reg_a = if raw_a == "a" {
+          A
+        } else if raw_a == "b" {
+          B
+        } else if raw_a == "c" {
+          C
+        } else if raw_a == "e" {
+          D
+        } else if raw_a == "d" {
+          E
+        } else if raw_a == "f" {
+          F
+        } else if raw_a == "ip" {
+          Ip
+        } else if raw_a == "sp" {
+          Sp
+        } else if raw_a == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
+          had_error = true;
+          continue;
+        };
+
+        let reg_b = if raw_b == "a" {
+          A
+        } else if raw_b == "b" {
+          B
+        } else if raw_b == "c" {
+          C
+        } else if raw_b == "e" {
+          D
+        } else if raw_b == "d" {
+          E
+        } else if raw_b == "f" {
+          F
+        } else if raw_b == "ip" {
+          Ip
+        } else if raw_b == "sp" {
+          Sp
+        } else if raw_b == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
+          had_error = true;
+          continue;
+        };
+
+        instrs.push(Tll(reg_a, reg_b));
+      }
+      "tmm" => {
+        if splited.len() < 3 {
+          error(ln, line, "Syntax error: valid syntax: `tmm <register_a> <register_b>`");
+          had_error = true;
+          continue;
+        }
+
+        let raw_a = splited[1];
+        let raw_b = splited[2];
+
+        let reg_a = if raw_a == "a" {
+          A
+        } else if raw_a == "b" {
+          B
+        } else if raw_a == "c" {
+          C
+        } else if raw_a == "e" {
+          D
+        } else if raw_a == "d" {
+          E
+        } else if raw_a == "f" {
+          F
+        } else if raw_a == "ip" {
+          Ip
+        } else if raw_a == "sp" {
+          Sp
+        } else if raw_a == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
+          had_error = true;
+          continue;
+        };
+
+        let reg_b = if raw_b == "a" {
+          A
+        } else if raw_b == "b" {
+          B
+        } else if raw_b == "c" {
+          C
+        } else if raw_b == "e" {
+          D
+        } else if raw_b == "d" {
+          E
+        } else if raw_b == "f" {
+          F
+        } else if raw_b == "ip" {
+          Ip
+        } else if raw_b == "sp" {
+          Sp
+        } else if raw_b == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
+          had_error = true;
+          continue;
+        };
+
+        instrs.push(Tmm(reg_a, reg_b));
+      }
+      "tel" => {
+        if splited.len() < 3 {
+          error(ln, line, "Syntax error: valid syntax: `tel <register_a> <register_b>`");
+          had_error = true;
+          continue;
+        }
+
+        let raw_a = splited[1];
+        let raw_b = splited[2];
+
+        let reg_a = if raw_a == "a" {
+          A
+        } else if raw_a == "b" {
+          B
+        } else if raw_a == "c" {
+          C
+        } else if raw_a == "e" {
+          D
+        } else if raw_a == "d" {
+          E
+        } else if raw_a == "f" {
+          F
+        } else if raw_a == "ip" {
+          Ip
+        } else if raw_a == "sp" {
+          Sp
+        } else if raw_a == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
+          had_error = true;
+          continue;
+        };
+
+        let reg_b = if raw_b == "a" {
+          A
+        } else if raw_b == "b" {
+          B
+        } else if raw_b == "c" {
+          C
+        } else if raw_b == "e" {
+          D
+        } else if raw_b == "d" {
+          E
+        } else if raw_b == "f" {
+          F
+        } else if raw_b == "ip" {
+          Ip
+        } else if raw_b == "sp" {
+          Sp
+        } else if raw_b == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
+          had_error = true;
+          continue;
+        };
+
+        instrs.push(Tel(reg_a, reg_b));
+      }
+      "tem" => {
+        if splited.len() < 3 {
+          error(ln, line, "Syntax error: valid syntax: `tem <register_a> <register_b>`");
+          had_error = true;
+          continue;
+        }
+
+        let raw_a = splited[1];
+        let raw_b = splited[2];
+
+        let reg_a = if raw_a == "a" {
+          A
+        } else if raw_a == "b" {
+          B
+        } else if raw_a == "c" {
+          C
+        } else if raw_a == "e" {
+          D
+        } else if raw_a == "d" {
+          E
+        } else if raw_a == "f" {
+          F
+        } else if raw_a == "ip" {
+          Ip
+        } else if raw_a == "sp" {
+          Sp
+        } else if raw_a == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
+          had_error = true;
+          continue;
+        };
+
+        let reg_b = if raw_b == "a" {
+          A
+        } else if raw_b == "b" {
+          B
+        } else if raw_b == "c" {
+          C
+        } else if raw_b == "e" {
+          D
+        } else if raw_b == "d" {
+          E
+        } else if raw_b == "f" {
+          F
+        } else if raw_b == "ip" {
+          Ip
+        } else if raw_b == "sp" {
+          Sp
+        } else if raw_b == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
+          had_error = true;
+          continue;
+        };
+
+        instrs.push(Tem(reg_a, reg_b));
+      }
+      "jmp" => {
+        if splited.len() < 2 {
+          error(ln, line, "Syntax error: valid syntax: `jmp <instruction>`");
+          had_error = true;
+          continue;
+        }
+
+        let instruction = match splited[1].parse::<u32>() {
+          Ok(i) => i,
+          Err(_e) => {
+            error(ln, line, &format!("Type error : {} is not valid integer >= 0", splited[1]));
+            had_error = true;
+            continue;
+          }
+        };
+
+        instrs.push(Jmp(instruction as i32));
+      }
       "psh" => {
           if splited.len() < 2 {
             error(ln, line, "Syntax error: valid syntax: `psh <integer>`");

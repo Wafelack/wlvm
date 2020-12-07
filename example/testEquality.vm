@@ -1,0 +1,10 @@
+set a 5
+set b 6
+tee a b
+jmp 8 ; Not equal so do not jump
+set c -1
+drg c
+hlt
+set c 1
+drg c
+hlt
