@@ -100,7 +100,7 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
 }
 
 fn help() {
-    println!("wlvm version 0.1.0 by Wafelack <wafelack@protonmail.com>\n");
+    println!("wlvm version 0.2.0 by Wafelack <wafelack@protonmail.com>\n");
     println!("usage: wlvm <command> [flags]\n");
     println!("COMMANDS:");
     println!("\trun <filename> : Runs the code file");

@@ -4,12 +4,13 @@ use std::fs;
 fn error(line: usize, whr: &str, message: &str) {
   eprintln!("{} | {}", line, whr);
   eprintln!("^^^^^^^^^^^^^^^^^^^^");
-  eprintln!("{}", message);
+  eprintln!("{}\n", message);
 }
 
 pub fn parse_file(filename: &str) -> Vec<Instructions> {
 
   let mut instrs: Vec<Instructions> = vec![];
+  let mut had_error = false;
 
   let fc = match fs::read_to_string(filename) {
     Ok(s) => s,
@@ -32,14 +33,16 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       "psh" => {
           if splited.len() < 2 {
             error(ln, line, "Syntax error: valid syntax: `psh <integer>`");
-            std::process::exit(-8);
+            had_error = true;
+            continue;
           }
 
           let to_psh = match  splited[1].parse::<i32>() {
             Ok(i) => i,
             Err(_e) => {
               error(ln, line, &format!("Type error : {} is not a valid integer", splited[1]));
-              std::process::exit(-7);
+              had_error = true;
+              continue;
             }
           };
 
@@ -48,7 +51,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       "mov" => {
         if splited.len() < 3 {
           error(ln, line, "Syntax error: valid syntax: `mov <register_a> <register_b>`");
-          std::process::exit(-6);
+          had_error = true;
+          continue;
         }
 
         let raw_a = splited[1];
@@ -74,7 +78,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         let reg_b = if raw_b == "a" {
@@ -97,7 +102,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         instrs.push(Mov(reg_a, reg_b));
@@ -106,7 +112,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       "set" => {
         if splited.len() < 3 {
           error(ln, line, "Syntax error: valid syntax: `set <register_a> <integer>`");
-          std::process::exit(-6);
+          had_error = true;
+          continue;
         }
 
         let raw = splited[1];
@@ -131,14 +138,16 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         let val = match splited[2].parse::<i32>() {
           Ok(i) => i,
           Err(_e) => {
             error(ln, line, &format!("Type error : {} is not a valid integer", splited[2]));
-            std::process::exit(-7);
+            had_error = true;
+            continue;
           }
         };
 
@@ -148,7 +157,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       "add" => {
         if splited.len() < 3 {
           error(ln, line, "Syntax error: valid syntax: `mov <register_a> <register_b>`");
-          std::process::exit(-6);
+          had_error = true;
+          continue;
         }
 
         let raw_a = splited[1];
@@ -174,7 +184,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         let reg_b = if raw_b == "a" {
@@ -197,7 +208,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         instrs.push(Add(reg_a, reg_b));
@@ -206,7 +218,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       "sub" => {
         if splited.len() < 3 {
           error(ln, line, "Syntax error: valid syntax: `mov <register_a> <register_b>`");
-          std::process::exit(-6);
+          had_error = true;
+          continue;
         }
 
         let raw_a = splited[1];
@@ -232,7 +245,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         let reg_b = if raw_b == "a" {
@@ -255,7 +269,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         instrs.push(Sub(reg_a, reg_b));
@@ -264,7 +279,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       "mul" => {
         if splited.len() < 3 {
           error(ln, line, "Syntax error: valid syntax: `mov <register_a> <register_b>`");
-          std::process::exit(-6);
+          had_error = true;
+          continue;
         }
 
         let raw_a = splited[1];
@@ -290,7 +306,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         let reg_b = if raw_b == "a" {
@@ -313,7 +330,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         instrs.push(Mul(reg_a, reg_b));
@@ -322,7 +340,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       "div" => {
         if splited.len() < 3 {
           error(ln, line, "Syntax error: valid syntax: `mov <register_a> <register_b>`");
-          std::process::exit(-6);
+          had_error = true;
+          continue;
         }
 
         let raw_a = splited[1];
@@ -348,7 +367,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_a));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         let reg_b = if raw_b == "a" {
@@ -371,7 +391,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw_b));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         instrs.push(Div(reg_a, reg_b));
@@ -383,7 +404,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       "drg" => {
         if splited.len() < 2 {
           error(ln, line, "Syntax error: valid syntax: `drg <register>`");
-          std::process::exit(-6);
+          had_error = true;
+          continue;
         }
 
         let raw = splited[1];
@@ -408,7 +430,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           St
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw));
-          std::process::exit(-5);
+          had_error = true;
+          continue;
         };
 
         instrs.push(Drg(reg));
@@ -422,6 +445,10 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       _ => (),
     }
 
+  }
+  if had_error {
+    eprintln!("Aborting due to previous errors");
+    std::process::exit(-7);
   }
   instrs.push(Hlt);
   instrs
