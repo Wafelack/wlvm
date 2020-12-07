@@ -3,6 +3,6 @@ psh 5 ; Push 5 on the stack
 mov a st ; Move the top of the stack to register a
 psh 6 ; Push 6 to the stack
 mov b st ; Move the top of the stack to register b
-add a ; Add the value of register b to register a
-drg ; Show the value of register a
+add a b ; Add the value of register b to register a
+drg a ; Show the value of register a
 hlt ; end program

@@ -1,0 +1,8 @@
+psh 5
+mov a st
+psh 10
+mov b st
+psh 8
+mov c st
+add a peek ; ERROR cannot an instruction to a register
+drg ; Another error : drg displays a register that has to be specified
