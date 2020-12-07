@@ -248,7 +248,7 @@ fn eval(
 }
 
 fn help() {
-    println!("wlvm version 0.2.0 by Wafelack <wafelack@protonmail.com>\n");
+    println!("wlvm version 0.3.4 by Wafelack <wafelack@protonmail.com>\n");
     println!("usage: wlvm <command> [flags]\n");
     println!("COMMANDS:");
     println!("\trun <filename> : Runs the code file");

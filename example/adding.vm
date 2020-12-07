@@ -5,5 +5,4 @@ psh 6 ; Push 6 to the stack
 mov b st ; Move the top of the stack to register b
 add a b ; Add the value of register b to register a
 drg a ; Show the value of register a
-dmp ; dump memory
 hlt ; end program
