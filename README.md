@@ -39,3 +39,5 @@ There are 3 special registers :
 - tem \<register_a> \<register_b> : Test if register_a >= register_b
 - jmp \<instruction> : Jump to \<instruction> if Eq register is true
 - prt \<register> : Prints the character corresponding to register value
+- inc \<register> : Increments the register's value
+- dec \<register> : Decrements the register's value
