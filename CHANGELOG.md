@@ -28,3 +28,9 @@
   - tel \<register_a> \<register_b> : Test if register_a <= register_b 
   - tem \<register_a> \<register_b> : Test if register_a >= register_b
   - jmp \<instruction> : Jump to \<instruction> if Eq register is true
+
+# 0.3.1
+
+- Added instructions :
+  - inc \<register> : Increments the register
+  - dec \<register> : Decrements the register

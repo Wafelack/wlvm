@@ -18,6 +18,8 @@ pub enum Instructions {
     Dst,
     Drg(Registers),
     Peek,
+    Dec(Registers),
+    Inc(Registers),
     Tee(Registers, Registers), // ==
     Tne(Registers, Registers), // !=
     Tll(Registers, Registers), // <
@@ -51,6 +53,12 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
     // Stack Pointer : regs[7]
 
     match instr {
+        Dec(reg) => {
+            regs[reg as usize] += 1;
+        }
+        Inc(reg) => {
+            regs[reg as usize] -= 1;
+        }
         Tee(a, b) => {
             regs[Eq as usize] = (regs[a as usize] == regs[b as usize]) as i32;
         }
