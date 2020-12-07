@@ -6,7 +6,7 @@ use std::io::Write;
 mod parser;
 
 use parser::*;
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Instructions {
     Psh(i32),
     Add(Registers, Registers),
@@ -30,9 +30,9 @@ pub enum Instructions {
     Tmm(Registers, Registers), // >
     Tel(Registers, Registers), // <=
     Tem(Registers, Registers), // >=
-    Jmp(i32), // Jump to line if Eq is true
+    Jmp(i32),       // Jump to line if Eq is true
 }
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Registers {
     A = 0,
     B = 1,
@@ -44,7 +44,7 @@ pub enum Registers {
     Sp = 7,
     St = 8,
     Eq = 9,
-    NumOfRegisters = 10
+    NumOfRegisters = 10,
 }
 
 fn reg_name(reg: i32) -> &'static str {
@@ -59,7 +59,7 @@ fn reg_name(reg: i32) -> &'static str {
         7 => "Sp",
         8 => "St",
         9 => "Eq",
-        _ => "_ "
+        _ => "_ ",
     }
 }
 
@@ -68,7 +68,6 @@ fn fetch(program: &Vec<Instructions>, ip: usize) -> Instructions {
 }
 
 pub fn dump(stack: &Vec<i32>, regs: &[i32; NumOfRegisters as usize]) {
-
     print!("[");
     for i in 0..(NumOfRegisters as usize) {
         print!("{}: {}, ", reg_name(i as i32), regs[i]);
@@ -85,8 +84,13 @@ pub fn dump(stack: &Vec<i32>, regs: &[i32; NumOfRegisters as usize]) {
     }
 }
 
-fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mut [i32; NumOfRegisters as usize], details: bool) {
-
+fn eval(
+    instr: Instructions,
+    running: &mut bool,
+    stack: &mut Vec<i32>,
+    regs: &mut [i32; NumOfRegisters as usize],
+    details: bool,
+) {
     // Instrucion Pointer : regs[6]
     // Stack Pointer : regs[7]
 
@@ -151,13 +155,11 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
             regs[Eq as usize] = (regs[a as usize] >= regs[b as usize]) as i32;
         }
         Jmp(i) => {
-
             if i < 0 {
                 eprintln!("Invalid operation. Aborting");
                 eprintln!("Memory dump : ");
                 dump(stack, regs);
             }
-            
             if regs[Eq as usize] == 1 {
                 if details {
                     println!("Goto {}", i);
@@ -176,7 +178,7 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
             *running = false;
         }
         Psh(i) => {
-            regs[7]+=1;
+            regs[7] += 1;
             stack[regs[7] as usize] = i;
             regs[8] = i;
             if details {
@@ -209,17 +211,17 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
             }
             regs[a as usize] *= regs[b as usize];
         }
-        Div(a,b) => {
+        Div(a, b) => {
             if details {
                 println!("{} / {}", regs[a as usize], regs[b as usize]);
             }
             regs[a as usize] /= regs[b as usize];
         }
-        Set(reg,i) => {
+        Set(reg, i) => {
             if details {
                 println!("{:?} = {}", reg, i);
             }
-            if let Ip = reg{
+            if let Ip = reg {
                 regs[reg as usize] = i - 1;
             } else {
                 regs[reg as usize] = i;
@@ -268,7 +270,9 @@ fn is_present(args: &Vec<String>, to_search: &str) -> bool {
 fn main() {
     let args = std::env::args().skip(1).collect::<Vec<String>>();
 
-    let mut program : Vec<Instructions> = vec![];
+    let mut program: Vec<Instructions> = vec![];
+
+    let mut details = false;
 
     if args.len() < 1 {
         help();
@@ -286,20 +290,52 @@ fn main() {
                 if is_present(&args, "--instructions") || is_present(&args, "-i") {
                     println!("{:?}\n==============================", program);
                 }
+                if is_present(&args, "--details") || is_present(&args, "-d") {
+                    details = true;
+                }
             }
-
+        } else if args[0] == "dump" {
+            if args.len() < 2 {
+                help();
+            } else {
+                if !std::path::Path::new(&args[1]).exists() {
+                    eprintln!("Error: no input files");
+                    std::process::exit(66);
+                } else {
+                    program = parse_file(&args[1]);
+                    program.push(Dmp);
+                    program = program
+                        .iter()
+                        .filter(|x| is_valid(**x))
+                        .map(|s| *s)
+                        .collect();
+                    program.push(Dmp);
+                    program.push(Hlt);
+                }
+            }
         } else {
             help();
         }
     }
 
     let mut running = true;
-    let mut stack = vec![0;256];
+    let mut stack = vec![0; 256];
     let mut registers = [0; NumOfRegisters as usize];
 
     while running {
         let instr = fetch(&program, registers[6] as usize);
-        eval(instr,&mut running, &mut stack, &mut registers, is_present(&args, "--details") || is_present(&args, "-d"));
+        eval(instr, &mut running, &mut stack, &mut registers, details);
         registers[6] += 1;
+    }
+}
+
+fn is_valid(instr: Instructions) -> bool {
+    match instr {
+        Prt(_) => false,
+        Drg(_) => false,
+        Dst => false,
+        Dmp => false,
+        Hlt => false,
+        _ => true,
     }
 }

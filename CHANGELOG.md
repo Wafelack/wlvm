@@ -43,3 +43,7 @@
 # 0.3.3
 
 - Added instruction dmp
+
+# 0.3.4
+
+- Added dump command
