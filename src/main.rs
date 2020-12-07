@@ -1,16 +1,23 @@
 use crate::Instructions::*;
 use crate::Registers::*;
-#[derive(Copy, Clone)]
+
+mod parser;
+#[derive(Copy, Clone, Debug)]
 enum Instructions {
     Psh(i32),
-    Add,
+    Add(Registers, Registers),
+    Mul(Registers, Registers),
+    Div(Registers, Registers),
+    Sub(Registers, Registers),
     Pop,
     Set(Registers, i32),
+    Mov(Registers, Registers),
     Hlt,
-    ShowStack,
-    ShowRegs,
+    Dst,
+    Drg(Registers),
+    Peek,
 }
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 enum Registers {
     A = 0,
     B = 1,
@@ -20,11 +27,12 @@ enum Registers {
     F = 5,
     Ip = 6,
     Sp = 7,
-    NumOfRegisters = 8
+    St = 8,
+    NumOfRegisters = 9
 }
 
-fn fetch(program: &Vec<Instructions>, regs: &mut [i32; NumOfRegisters as usize]) -> Instructions {
-    program[regs[6] as usize]
+fn fetch(program: &Vec<Instructions>, ip: usize) -> Instructions {
+    program[ip]
 }
 
 fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mut [i32; NumOfRegisters as usize]) {
@@ -37,32 +45,46 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
         Psh(i) => {
             regs[7]+=1;
             stack[regs[7] as usize] = i;
+            regs[8] = i;
             println!("-> {}", i);
         }
         Pop => {
             let popped = stack[regs[7] as usize];
             regs[7] -= 1;
+            regs[8] = stack[regs[7] as usize];
 
             println!("<- {}", popped);
         }
-        Add => {
-            let a = stack[regs[7] as usize];
-            regs[7] -= 1;
-            let b = stack[regs[7] as usize];
-            regs[7] -= 1;
-
-            let result = b + a;
-            regs[7] += 1;
-            stack[regs[7] as usize] = result;
-
+        Add(a, b) => {
+            regs[a as usize] += regs[b as usize];
+        }
+        Sub(a, b) => {
+            regs[a as usize] -= regs[b as usize];
+        }
+        Mul(a, b) => {
+            regs[a as usize] *= regs[b as usize];
+        }
+        Div(a,b) => {
+            regs[a as usize] /= regs[b as usize];
         }
         Set(reg,i) => {
-            regs[reg as usize] = i;
+            if let Ip = reg{
+                regs[reg as usize] = i - 1;
+            } else {
+                regs[reg as usize] = i;
+            }
         }
-        ShowRegs => {
-            println!("{:?}", regs);
+        Mov(a, b) => {
+            regs[a as usize] = regs[b as usize];
         }
-        ShowStack => {
+        Drg(reg) => {
+            println!("[{}]", regs[reg as usize]);
+        }
+        Peek => {
+            println!(" # {}", stack[regs[7] as usize]);
+            regs[8] = stack[regs[7] as usize];
+        }
+        Dst => {
             for val in stack {
                 if val != &0 {
                     println!("[{}]", val);
@@ -73,17 +95,16 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
 }
 
 fn main() {
-    let program: Vec<Instructions> = vec![Psh(5), Psh(6), Add, Pop, Set(A, 45), ShowRegs, ShowStack, Hlt];
+    let program: Vec<Instructions> = vec![Psh(5), Mov(A, St), Psh(6), Mov(B, St), Add(A, B), Drg(A), Hlt];
 
-    let mut ip = 0usize;
     let mut running = true;
-    let mut sp = -1;
     let mut stack = vec![0;256];
     let mut registers = [0; NumOfRegisters as usize];
 
-    while running {
+    println!("{:?}", program);
 
-        let instr = fetch(&program, &mut registers);
+    while running {
+        let instr = fetch(&program, registers[6] as usize);
         eval(instr,&mut running, &mut stack, &mut registers);
         registers[6] += 1;
     }
