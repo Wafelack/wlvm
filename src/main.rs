@@ -20,6 +20,7 @@ pub enum Instructions {
     Dst,
     Drg(Registers),
     Peek,
+    Dmp,
     Dec(Registers),
     Inc(Registers),
     Prt(Registers), // Prints the ascii letter corresponding of the register's content
@@ -46,8 +47,42 @@ pub enum Registers {
     NumOfRegisters = 10
 }
 
+fn reg_name(reg: i32) -> &'static str {
+    match reg {
+        0 => "A",
+        1 => "B",
+        2 => "C",
+        3 => "D",
+        4 => "E",
+        5 => "F",
+        6 => "Ip",
+        7 => "Sp",
+        8 => "St",
+        9 => "Eq",
+        _ => "_ "
+    }
+}
+
 fn fetch(program: &Vec<Instructions>, ip: usize) -> Instructions {
     program[ip]
+}
+
+pub fn dump(stack: &Vec<i32>, regs: &[i32; NumOfRegisters as usize]) {
+
+    print!("[");
+    for i in 0..(NumOfRegisters as usize) {
+        print!("{}: {}, ", reg_name(i as i32), regs[i]);
+    }
+    println!("]");
+    println!();
+    print!("Stack : [{}, ", stack[0]);
+    for i in 1..stack.len() {
+        if i == stack.len() - 1 {
+            println!("{}]", stack[i]);
+        } else {
+            print!("{}, ", stack[i]);
+        }
+    }
 }
 
 fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mut [i32; NumOfRegisters as usize], details: bool) {
@@ -60,6 +95,7 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
     }
 
     match instr {
+        Dmp => dump(stack, regs),
         Prt(reg) => {
             if (0..256).contains(&regs[reg as usize]) {
                 print!("{}", regs[reg as usize] as u8 as char);
@@ -115,6 +151,12 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
             regs[Eq as usize] = (regs[a as usize] >= regs[b as usize]) as i32;
         }
         Jmp(i) => {
+
+            if i < 0 {
+                eprintln!("Invalid operation. Aborting");
+                eprintln!("Memory dump : ");
+                dump(stack, regs);
+            }
             
             if regs[Eq as usize] == 1 {
                 if details {

@@ -12,10 +12,11 @@ Virtual machine with associated language written in Rust
 
 There are 6 multi purposes registers, marked from a to f.
 
-There are 3 special registers : 
+There are 4 special registers : 
 - sp : The stack pointer
 - ip : The instruction pointer
 - st : The stack top value
+- eq : The result of the last test performed
 
 ### Instruction Set
 
@@ -41,3 +42,4 @@ There are 3 special registers :
 - prt \<register> : Prints the character corresponding to register value
 - inc \<register> : Increments the register's value
 - dec \<register> : Decrements the register's value
+- dmp : Dumps the stack and the registers

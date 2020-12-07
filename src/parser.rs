@@ -66,6 +66,7 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
         instrs.push(Inc(reg))
 
       }
+      "dmp" => instrs.push(Dmp),
       "prt" => {
         if splited.len() < 2 {
           error(ln, line, "Syntax error: valid syntax: `prt <register>`");

@@ -39,3 +39,7 @@
 
 - Fixed inverted Dec & Inc
 - Added prt instruction to print ascii char corresponding to letter value
+
+# 0.3.3
+
+- Added instruction dmp
