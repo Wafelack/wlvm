@@ -66,6 +66,42 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
         instrs.push(Inc(reg))
 
       }
+      "prt" => {
+        if splited.len() < 2 {
+          error(ln, line, "Syntax error: valid syntax: `prt <register>`");
+          had_error = true;
+          continue;
+        }
+
+        let raw = splited[1];
+
+        let reg = if raw == "a" {
+          A
+        } else if raw == "b" {
+          B
+        } else if raw == "c" {
+          C
+        } else if raw == "e" {
+          D
+        } else if raw == "d" {
+          E
+        } else if raw == "f" {
+          F
+        } else if raw == "ip" {
+          Ip
+        } else if raw == "sp" {
+          Sp
+        } else if raw == "st" {
+          St
+        } else {
+          error(ln, line, &format!("Type error : {} is not a valid register", raw));
+          had_error = true;
+          continue;
+        };
+
+        instrs.push(Prt(reg))
+
+      }
       "dec" => {
         if splited.len() < 2 {
           error(ln, line, "Syntax error: valid syntax: `dec <register>`");
@@ -878,6 +914,8 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           Sp
         } else if raw == "st" {
           St
+        } else if raw == "eq" {
+          Eq
         } else {
           error(ln, line, &format!("Type error : {} is not a valid register", raw));
           had_error = true;

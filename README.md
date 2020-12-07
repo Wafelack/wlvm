@@ -38,3 +38,4 @@ There are 3 special registers :
 - tel \<register_a> \<register_b> : Test if register_a <= register_b 
 - tem \<register_a> \<register_b> : Test if register_a >= register_b
 - jmp \<instruction> : Jump to \<instruction> if Eq register is true
+- prt \<register> : Prints the character corresponding to register value

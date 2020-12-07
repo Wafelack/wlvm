@@ -1,5 +1,7 @@
 use crate::Instructions::*;
 use crate::Registers::*;
+use std::io;
+use std::io::Write;
 
 mod parser;
 
@@ -20,6 +22,7 @@ pub enum Instructions {
     Peek,
     Dec(Registers),
     Inc(Registers),
+    Prt(Registers), // Prints the ascii letter corresponding of the register's content
     Tee(Registers, Registers), // ==
     Tne(Registers, Registers), // !=
     Tll(Registers, Registers), // <
@@ -52,37 +55,84 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
     // Instrucion Pointer : regs[6]
     // Stack Pointer : regs[7]
 
+    if details {
+        print!("{} - ", regs[6]);
+    }
+
     match instr {
-        Dec(reg) => {
-            regs[reg as usize] += 1;
+        Prt(reg) => {
+            if (0..256).contains(&regs[reg as usize]) {
+                print!("{}", regs[reg as usize] as u8 as char);
+                io::stdout().flush().unwrap();
+            }
         }
         Inc(reg) => {
+            if details {
+                println!("Inc : {} + 1", regs[reg as usize]);
+            }
+            regs[reg as usize] += 1;
+        }
+        Dec(reg) => {
+            if details {
+                println!("Dec : {} - 1", regs[reg as usize]);
+            }
             regs[reg as usize] -= 1;
         }
         Tee(a, b) => {
+            if details {
+                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+            }
             regs[Eq as usize] = (regs[a as usize] == regs[b as usize]) as i32;
         }
         Tne(a, b) => {
+            if details {
+                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+            }
             regs[Eq as usize] = (regs[a as usize] != regs[b as usize]) as i32;
         }
         Tll(a, b) => {
+            if details {
+                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+            }
             regs[Eq as usize] = (regs[a as usize] < regs[b as usize]) as i32;
         }
         Tmm(a, b) => {
+            if details {
+                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+            }
             regs[Eq as usize] = (regs[a as usize] > regs[b as usize]) as i32;
         }
         Tel(a, b) => {
+            if details {
+                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+            }
             regs[Eq as usize] = (regs[a as usize] <= regs[b as usize]) as i32;
         }
         Tem(a, b) => {
+            if details {
+                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+            }
             regs[Eq as usize] = (regs[a as usize] >= regs[b as usize]) as i32;
         }
         Jmp(i) => {
+            
             if regs[Eq as usize] == 1 {
-                regs[Ip as usize] = i;
+                if details {
+                    println!("Goto {}", i);
+                }
+                regs[Ip as usize] = i - 3;
+            } else {
+                if details {
+                    println!("None");
+                }
             }
         }
-        Hlt => *running = false,
+        Hlt => {
+            if details {
+                println!("Quit");
+            }
+            *running = false;
+        }
         Psh(i) => {
             regs[7]+=1;
             stack[regs[7] as usize] = i;
@@ -100,18 +150,33 @@ fn eval(instr: Instructions, running: &mut bool, stack: &mut Vec<i32>, regs: &mu
             }
         }
         Add(a, b) => {
+            if details {
+                println!("{} + {}", regs[a as usize], regs[b as usize]);
+            }
             regs[a as usize] += regs[b as usize];
         }
         Sub(a, b) => {
+            if details {
+                println!("{} - {}", regs[a as usize], regs[b as usize]);
+            }
             regs[a as usize] -= regs[b as usize];
         }
         Mul(a, b) => {
+            if details {
+                println!("{} * {}", regs[a as usize], regs[b as usize]);
+            }
             regs[a as usize] *= regs[b as usize];
         }
         Div(a,b) => {
+            if details {
+                println!("{} / {}", regs[a as usize], regs[b as usize]);
+            }
             regs[a as usize] /= regs[b as usize];
         }
         Set(reg,i) => {
+            if details {
+                println!("{:?} = {}", reg, i);
+            }
             if let Ip = reg{
                 regs[reg as usize] = i - 1;
             } else {

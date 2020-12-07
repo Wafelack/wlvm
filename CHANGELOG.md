@@ -34,3 +34,8 @@
 - Added instructions :
   - inc \<register> : Increments the register
   - dec \<register> : Decrements the register
+
+# 0.3.2
+
+- Fixed inverted Dec & Inc
+- Added prt instruction to print ascii char corresponding to letter value

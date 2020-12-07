@@ -1,0 +1,29 @@
+; A not optimized at all hello world program
+
+set a 72 ; H
+prt a
+set a 101 ; e
+prt a
+set a 108 ; l
+prt a
+prt a
+set a 111 ; o
+prt a
+set a 32 ; <Space>
+prt a
+set a 87 ; W
+prt a
+set a 111 ; o
+prt a
+set a 114 ; r
+prt a
+set a 108 ; l
+prt a
+set a 100 ; d
+prt a
+set a 32 ; <space>
+prt a
+set a 33 ; !
+prt a
+set a 10 ; \n
+prt a

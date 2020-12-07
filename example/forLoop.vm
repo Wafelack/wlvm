@@ -1,1 +1,14 @@
-set a 5
+; Program with a for loop
+set a 5 ; the max value
+set b 0 ; the counter
+set c 0 ; total sum
+
+tel a b ; test if a <= b
+jmp 10 ; if a <= b go to instruction 10
+
+inc b ; increment the counter
+add c b ; add the counter value to c
+
+set ip 3
+
+drg c ; print sum
