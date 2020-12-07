@@ -3,6 +3,10 @@ name = "wlvm"
 version = "0.1.0"
 authors = ["Wafelack <wafelack@protonmail.com>"]
 edition = "2018"
+description = "Simple virtual machine with associated language written in Rust"
+license = "MPL-2.0"
+repository = "https://github.com/wafelack/wlvm"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
