@@ -61,3 +61,7 @@
 # 0.3.6
 
 - Correcting stack bug making stack starting at 1
+
+# 0.3.7
+
+- Being the same as jump while moving to ip (-3)

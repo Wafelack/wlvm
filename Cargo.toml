@@ -1,6 +1,6 @@
 [package]
 name = "wlvm"
-version = "0.3.6"
+version = "0.3.7"
 authors = ["Wafelack <wafelack@protonmail.com>"]
 edition = "2018"
 description = "Simple virtual machine with associated language written in Rust"
