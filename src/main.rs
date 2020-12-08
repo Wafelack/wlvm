@@ -212,7 +212,7 @@ fn eval(
         }
         Mov(a, b) => {
             if details {
-                println!("{} <-| {}", reg_name(a), reg_name(b));
+                println!("{} <-| {}", reg_name(a as i32), reg_name(b as i32));
             }
             regs[a as usize] = regs[b as usize];
         }
