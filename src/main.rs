@@ -214,6 +214,9 @@ fn eval(
             if details {
                 println!("{} <-| {}", reg_name(a as i32), reg_name(b as i32));
             }
+            if a == Ip {
+                regs[a as usize] = regs[b as usize] - 3; // Being the same as jump
+            }
             regs[a as usize] = regs[b as usize];
         }
         Drg(reg) => {
