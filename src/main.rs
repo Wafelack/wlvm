@@ -20,7 +20,6 @@ pub enum Instructions {
     Hlt,
     Dst,
     Drg(Registers),
-    Res,
     Dmp,
     Prt(Registers), // Prints the ascii letter corresponding of the register's content
     Tee(Registers, Registers), // ==
@@ -98,7 +97,6 @@ fn eval(
     }
 
     match instr {
-        Res => {}
         Dmp => dump(stack, regs),
         Prt(reg) => {
             if (0..256).contains(&regs[reg as usize]) {
@@ -108,43 +106,46 @@ fn eval(
         }
         Tee(a, b) => {
             if details {
-                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+                println!("{} == {}", regs[a as usize], regs[b as usize]);
             }
             regs[Eq as usize] = (regs[a as usize] == regs[b as usize]) as i32;
         }
         Tne(a, b) => {
             if details {
-                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+                println!("{} != {}", regs[a as usize], regs[b as usize]);
             }
             regs[Eq as usize] = (regs[a as usize] != regs[b as usize]) as i32;
         }
         Tll(a, b) => {
             if details {
-                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+                println!("{} < {}", regs[a as usize], regs[b as usize]);
             }
             regs[Eq as usize] = (regs[a as usize] < regs[b as usize]) as i32;
         }
         Tmm(a, b) => {
             if details {
-                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+                println!("{} > {}", regs[a as usize], regs[b as usize]);
             }
             regs[Eq as usize] = (regs[a as usize] > regs[b as usize]) as i32;
         }
         Tel(a, b) => {
             if details {
-                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+                println!("{}  <= {}", regs[a as usize], regs[b as usize]);
             }
             regs[Eq as usize] = (regs[a as usize] <= regs[b as usize]) as i32;
         }
         Tem(a, b) => {
             if details {
-                println!("A : {} ; B : {}", regs[a as usize], regs[b as usize]);
+                println!("{}  >= {}", regs[a as usize], regs[b as usize]);
             }
             regs[Eq as usize] = (regs[a as usize] >= regs[b as usize]) as i32;
         }
         Jmp(i) => {
             if i < 0 {
                 panic!("ERR_ATEMPTED_TO_JUMP_TO_NEGATIVE_OPERATION_NUMBER");
+            }
+            if details {
+                println!("Jumped to {}", i);
             }
             if regs[Eq as usize] == 1 {
                 if details {
@@ -210,6 +211,9 @@ fn eval(
             regs[a as usize] /= regs[b as usize];
         }
         Mov(a, b) => {
+            if details {
+                println!("{} <-| {}", reg_name(a), reg_name(b));
+            }
             regs[a as usize] = regs[b as usize];
         }
         Drg(reg) => {
