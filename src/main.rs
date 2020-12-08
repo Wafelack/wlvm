@@ -5,6 +5,8 @@ use std::io::Write;
 
 mod parser;
 
+const STACK_SIZE: usize = 255;
+
 use parser::*;
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Instructions {
@@ -14,15 +16,12 @@ pub enum Instructions {
     Div(Registers, Registers),
     Sub(Registers, Registers),
     Pop,
-    Set(Registers, i32),
     Mov(Registers, Registers),
     Hlt,
     Dst,
     Drg(Registers),
-    Peek,
+    Res,
     Dmp,
-    Dec(Registers),
-    Inc(Registers),
     Prt(Registers), // Prints the ascii letter corresponding of the register's content
     Tee(Registers, Registers), // ==
     Tne(Registers, Registers), // !=
@@ -99,24 +98,13 @@ fn eval(
     }
 
     match instr {
+        Res => {}
         Dmp => dump(stack, regs),
         Prt(reg) => {
             if (0..256).contains(&regs[reg as usize]) {
                 print!("{}", regs[reg as usize] as u8 as char);
                 io::stdout().flush().unwrap();
             }
-        }
-        Inc(reg) => {
-            if details {
-                println!("Inc : {} + 1", regs[reg as usize]);
-            }
-            regs[reg as usize] += 1;
-        }
-        Dec(reg) => {
-            if details {
-                println!("Dec : {} - 1", regs[reg as usize]);
-            }
-            regs[reg as usize] -= 1;
         }
         Tee(a, b) => {
             if details {
@@ -156,9 +144,7 @@ fn eval(
         }
         Jmp(i) => {
             if i < 0 {
-                eprintln!("Invalid operation. Aborting");
-                eprintln!("Memory dump : ");
-                dump(stack, regs);
+                panic!("ERR_ATEMPTED_TO_JUMP_TO_NEGATIVE_OPERATION_NUMBER");
             }
             if regs[Eq as usize] == 1 {
                 if details {
@@ -178,6 +164,9 @@ fn eval(
             *running = false;
         }
         Psh(i) => {
+            if (regs[7] + 1) as usize >= STACK_SIZE {
+                panic!("ERR_STACK_OVERFLOW");
+            }
             regs[7] += 1;
             stack[regs[7] as usize] = i;
             regs[8] = i;
@@ -186,6 +175,9 @@ fn eval(
             }
         }
         Pop => {
+            if regs[7] - 1 < 0 {
+                panic!("ERR_STACK_UNDERFLOW");
+            }
             let popped = stack[regs[7] as usize];
             regs[7] -= 1;
             regs[8] = stack[regs[7] as usize];
@@ -217,25 +209,11 @@ fn eval(
             }
             regs[a as usize] /= regs[b as usize];
         }
-        Set(reg, i) => {
-            if details {
-                println!("{:?} = {}", reg, i);
-            }
-            if let Ip = reg {
-                regs[reg as usize] = i - 1;
-            } else {
-                regs[reg as usize] = i;
-            }
-        }
         Mov(a, b) => {
             regs[a as usize] = regs[b as usize];
         }
         Drg(reg) => {
             println!("[{}]", regs[reg as usize]);
-        }
-        Peek => {
-            println!(" # {}", stack[regs[7] as usize]);
-            regs[8] = stack[regs[7] as usize];
         }
         Dst => {
             for val in stack {
@@ -248,10 +226,14 @@ fn eval(
 }
 
 fn help() {
-    println!("wlvm version 0.3.4 by Wafelack <wafelack@protonmail.com>\n");
+    println!(
+        "wlvm version {} by Wafelack <wafelack@protonmail.com>\n",
+        env!("CARGO_PKG_VERSION")
+    );
     println!("usage: wlvm <command> [flags]\n");
     println!("COMMANDS:");
     println!("\trun <filename> : Runs the code file");
+    println!("\tdump <filename>: Runs the program and dumps the memory");
     println!("\nFLAGS:");
     println!("\t--instructions | -d: Shows the instructions run in the program");
     println!("\t--details | -d     : Shows the details while running code");
@@ -319,7 +301,7 @@ fn main() {
     }
 
     let mut running = true;
-    let mut stack = vec![0; 256];
+    let mut stack = vec![0; STACK_SIZE];
     let mut registers = [0; NumOfRegisters as usize];
 
     while running {

@@ -47,3 +47,13 @@
 # 0.3.4
 
 - Added dump command
+
+# 0.3.5
+
+- Removed instructions :
+  - set
+  - peek
+  - inc
+  - dec
+
+- Added better error messages

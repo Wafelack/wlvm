@@ -1,0 +1,6 @@
+psh 5
+mov a st
+psh 6
+mov b st
+add a b
+drg a
