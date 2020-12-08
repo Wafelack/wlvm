@@ -57,3 +57,7 @@
   - dec
 
 - Added better error messages
+
+# 0.3.6
+
+- Correcting stack bug making stack starting at 1

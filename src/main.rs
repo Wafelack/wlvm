@@ -304,6 +304,8 @@ fn main() {
     let mut stack = vec![0; STACK_SIZE];
     let mut registers = [0; NumOfRegisters as usize];
 
+    registers[Sp as usize] = -1;
+
     while running {
         let instr = fetch(&program, registers[6] as usize);
         eval(instr, &mut running, &mut stack, &mut registers, details);
