@@ -65,3 +65,7 @@
 # 0.3.7
 
 - Being the same as jump while moving to ip (-3)
+
+# 0.3.8
+
+- Added exception for popping the last element of the stack

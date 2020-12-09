@@ -176,12 +176,20 @@ fn eval(
             }
         }
         Pop => {
-            if regs[7] - 1 < 0 {
+            if regs[7] - 1 < 0 && regs[7] != 0 {
+                // adding exception for popping the last element
                 panic!("ERR_STACK_UNDERFLOW");
             }
             let popped = stack[regs[7] as usize];
-            regs[7] -= 1;
-            regs[8] = stack[regs[7] as usize];
+
+            if regs[7] != 0 {
+                regs[7] -= 1;
+                regs[8] = stack[regs[7] as usize];
+            } else {
+                regs[7] -= 1;
+                regs[8] = 0;
+            }
+
             if details {
                 println!("<- {}", popped);
             }
@@ -328,5 +336,35 @@ fn is_valid(instr: Instructions) -> bool {
         Dmp => false,
         Hlt => false,
         _ => true,
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn validation() {
+        assert!(!is_valid(Prt(A)));
+        assert!(!is_valid(Drg(A)));
+        assert!(!is_valid(Dst));
+        assert!(!is_valid(Dmp));
+        assert!(!is_valid(Hlt));
+    }
+
+    #[test]
+    fn stack() {
+        let mut stack = vec![0; STACK_SIZE];
+        let mut registers = [0; NumOfRegisters as usize];
+        registers[Sp as usize] = -1;
+        let mut running = true;
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(stack[0], 5);
+        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(stack[1], 8);
+        eval(Pop, &mut running, &mut stack, &mut registers, false);
+        eval(Pop, &mut running, &mut stack, &mut registers, false);
+        eval(Psh(14), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(stack[0], 14);
     }
 }
