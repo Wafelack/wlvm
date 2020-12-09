@@ -1,29 +1,41 @@
 ; A not optimized at all hello world program
-
-set a 72 ; H
+psh 72 ; H
+mov a st
 prt a
-set a 101 ; e
+psh 101 ; e
+mov a st
 prt a
-set a 108 ; l
+psh 108 ; l
+mov a st
 prt a
 prt a
-set a 111 ; o
+psh 111 ; o
+mov a st
 prt a
-set a 32 ; <Space>
+psh 32 ; <Space>
+mov a st
 prt a
-set a 87 ; W
+psh 87 ; W
+mov a st
 prt a
-set a 111 ; o
+psh 111 ; o
+mov a st
 prt a
-set a 114 ; r
+psh 114 ; r
+mov a st
 prt a
-set a 108 ; l
+psh 108 ; l
+mov a st
 prt a
-set a 100 ; d
+psh 100 ; d
+mov a st
 prt a
-set a 32 ; <space>
+psh 32 ; <space>
+mov a st
 prt a
-set a 33 ; !
+psh 33 ; !
+mov a st
 prt a
-set a 10 ; \n
+psh 10 ; \n
+mov a st
 prt a
