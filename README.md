@@ -2,11 +2,35 @@
 
 Virtual machine with associated language written in Rust
 
+![Build & Test](https://github.com/Wafelack/wlvm/workflows/Build%20&%20Test/badge.svg)
+
 ## Installation
 
 `cargo install wlvm`
 
-## Virtual Machine datasheet
+## Build
+
+```
+git clone https://github.com/wafelack/wlvm
+cd wlvm/
+cargo build
+cargo test
+```
+
+## Usage
+
+### Run program
+
+`wlvm run $program`
+
+### Dump program's memory and registers
+
+`wlvm dump $program`
+
+## Details
+
+<details>
+<summary>Virtual Machine datasheet</summary>
 
 ### Registers
 
@@ -39,3 +63,6 @@ There are 4 special registers :
 - jmp \<instruction> : Jump to \<instruction> if Eq register is true
 - prt \<register> : Prints the character corresponding to register value
 - dmp : Dumps the stack and the registers
+
+</details>
+
