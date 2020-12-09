@@ -69,3 +69,7 @@
 # 0.3.8
 
 - Added exception for popping the last element of the stack
+
+# 0.3.9
+
+- Fixed jump problem (bad decrementation)

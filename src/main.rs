@@ -151,7 +151,7 @@ fn eval(
                 if details {
                     println!("Goto {}", i);
                 }
-                regs[Ip as usize] = i - 3;
+                regs[Ip as usize] = i - 1;
             } else {
                 if details {
                     println!("None");
@@ -223,7 +223,7 @@ fn eval(
                 println!("{} <-| {}", reg_name(a as i32), reg_name(b as i32));
             }
             if a == Ip {
-                regs[a as usize] = regs[b as usize] - 3; // Being the same as jump
+                regs[a as usize] = regs[b as usize] - 1; // Being the same as jump
             }
             regs[a as usize] = regs[b as usize];
         }
@@ -315,17 +315,22 @@ fn main() {
         }
     }
 
-    let mut running = true;
-    let mut stack = vec![0; STACK_SIZE];
-    let mut registers = [0; NumOfRegisters as usize];
-
-    registers[Sp as usize] = -1;
+    let (mut stack, mut registers, mut running) = setup_environment();
 
     while running {
         let instr = fetch(&program, registers[6] as usize);
         eval(instr, &mut running, &mut stack, &mut registers, details);
         registers[6] += 1;
     }
+}
+
+fn setup_environment() -> (Vec<i32>, [i32; NumOfRegisters as usize], bool) {
+    let stack = vec![0; STACK_SIZE];
+    let mut registers = [0; NumOfRegisters as usize];
+
+    registers[Sp as usize] = -1;
+
+    (stack, registers, true)
 }
 
 fn is_valid(instr: Instructions) -> bool {
@@ -354,10 +359,8 @@ mod test {
 
     #[test]
     fn stack() {
-        let mut stack = vec![0; STACK_SIZE];
-        let mut registers = [0; NumOfRegisters as usize];
-        registers[Sp as usize] = -1;
-        let mut running = true;
+        let (mut stack, mut registers, mut running) = setup_environment();
+
         eval(Psh(5), &mut running, &mut stack, &mut registers, false);
         assert_eq!(stack[0], 5);
         eval(Psh(8), &mut running, &mut stack, &mut registers, false);
@@ -366,5 +369,176 @@ mod test {
         eval(Pop, &mut running, &mut stack, &mut registers, false);
         eval(Psh(14), &mut running, &mut stack, &mut registers, false);
         assert_eq!(stack[0], 14);
+    }
+
+    #[test]
+    fn registers_moving() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(registers[A as usize], 5);
+        eval(Mov(B, A), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(registers[B as usize], 5);
+    }
+
+    #[test]
+    fn registers_add() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        eval(Add(A, B), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(registers[A as usize], 11);
+    }
+
+    #[test]
+    fn registers_sub() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        eval(Sub(A, B), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(registers[A as usize], -1);
+    }
+
+    #[test]
+    fn registers_mul() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        eval(Mul(A, B), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(registers[A as usize], 30);
+    }
+
+    #[test]
+    fn registers_div() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(10), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        eval(Div(A, B), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(registers[A as usize], 2);
+    }
+
+    #[test]
+    fn halt_program() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(10), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        eval(Div(A, B), &mut running, &mut stack, &mut registers, false);
+
+        eval(Hlt, &mut running, &mut stack, &mut registers, false);
+
+        assert!(!running);
+    }
+
+    #[test]
+    fn equality() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+
+        eval(Tee(A, B), &mut running, &mut stack, &mut registers, false);
+
+        assert_eq!(registers[Eq as usize], 1);
+    }
+    #[test]
+    fn non_equality() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+
+        eval(Tne(A, B), &mut running, &mut stack, &mut registers, false);
+
+        assert_eq!(registers[Eq as usize], 1);
+    }
+
+    #[test]
+    fn lower_than() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+
+        eval(Tll(A, B), &mut running, &mut stack, &mut registers, false);
+
+        assert_eq!(registers[Eq as usize], 1);
+    }
+
+    #[test]
+    fn greater_than() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+
+        eval(Tmm(A, B), &mut running, &mut stack, &mut registers, false);
+
+        assert_eq!(registers[Eq as usize], 1);
+    }
+    #[test]
+    fn greater_or_equal() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+
+        eval(Tem(A, B), &mut running, &mut stack, &mut registers, false);
+
+        assert_eq!(registers[Eq as usize], 1);
+    }
+
+    #[test]
+    fn lower_or_equal() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+
+        eval(Tel(A, B), &mut running, &mut stack, &mut registers, false);
+
+        assert_eq!(registers[Eq as usize], 1);
+    }
+
+    #[test]
+    fn jump() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
+        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+
+        eval(Tel(A, B), &mut running, &mut stack, &mut registers, false);
+
+        eval(Jmp(3), &mut running, &mut stack, &mut registers, false);
+        assert_eq!(registers[Ip as usize], 2);
     }
 }
