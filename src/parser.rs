@@ -1,4 +1,4 @@
-use crate::{Instructions, Instructions::*, Registers::*};
+use crate::{Instructions, Instructions::*, Register::*};
 use std::fs;
 
 fn error(line: usize, whr: &str, message: &str) {

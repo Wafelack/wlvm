@@ -1,5 +1,5 @@
 use crate::Instructions::*;
-use crate::Registers::*;
+use crate::Register::*;
 use std::io;
 use std::io::Write;
 
@@ -11,27 +11,27 @@ use parser::*;
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Instructions {
     Psh(i32),
-    Add(Registers, Registers),
-    Mul(Registers, Registers),
-    Div(Registers, Registers),
-    Sub(Registers, Registers),
+    Add(Register, Register),
+    Mul(Register, Register),
+    Div(Register, Register),
+    Sub(Register, Register),
     Pop,
-    Mov(Registers, Registers),
+    Mov(Register, Register),
     Hlt,
     Dst,
-    Drg(Registers),
+    Drg(Register),
     Dmp,
-    Prt(Registers), // Prints the ascii letter corresponding of the register's content
-    Tee(Registers, Registers), // ==
-    Tne(Registers, Registers), // !=
-    Tll(Registers, Registers), // <
-    Tmm(Registers, Registers), // >
-    Tel(Registers, Registers), // <=
-    Tem(Registers, Registers), // >=
+    Prt(Register), // Prints the ascii letter corresponding of the register's content
+    Tee(Register, Register), // ==
+    Tne(Register, Register), // !=
+    Tll(Register, Register), // <
+    Tmm(Register, Register), // >
+    Tel(Register, Register), // <=
+    Tem(Register, Register), // >=
     Jmp(i32),       // Jump to line if Eq is true
 }
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Registers {
+pub enum Register {
     A = 0,
     B = 1,
     C = 2,
