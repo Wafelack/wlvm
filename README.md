@@ -51,7 +51,6 @@ There are 4 special registers :
 - div \<register_a> \<register_b> : Divides the content of register_a by register_b
 - pop : Pops the stack
 - mov \<register_a> \<register_b> : Copies content of register_b in register_a
-- dst : Prints the stack
 - drg \<register> : Prints the content of the specified register
 - hlt : Stops the program
 - tee \<register_a> \<register_b> : Test if register_a == register_b

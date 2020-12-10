@@ -18,7 +18,6 @@ pub enum Instructions {
     Pop,
     Mov(Register, Register),
     Hlt,
-    Dst,
     Drg(Register),
     Dmp,
     Prt(Register), // Prints the ascii letter corresponding of the register's content
@@ -228,14 +227,7 @@ fn eval(
             regs[a as usize] = regs[b as usize];
         }
         Drg(reg) => {
-            println!("[{}]", regs[reg as usize]);
-        }
-        Dst => {
-            for val in stack {
-                if val != &0 {
-                    println!("[{}]", val);
-                }
-            }
+            println!("{}", regs[reg as usize]);
         }
     }
 }
@@ -337,7 +329,6 @@ fn is_valid(instr: Instructions) -> bool {
     match instr {
         Prt(_) => false,
         Drg(_) => false,
-        Dst => false,
         Dmp => false,
         Hlt => false,
         _ => true,
@@ -352,7 +343,6 @@ mod test {
     fn validation() {
         assert!(!is_valid(Prt(A)));
         assert!(!is_valid(Drg(A)));
-        assert!(!is_valid(Dst));
         assert!(!is_valid(Dmp));
         assert!(!is_valid(Hlt));
     }

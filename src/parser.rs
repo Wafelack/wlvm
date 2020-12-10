@@ -909,7 +909,6 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
         instrs.push(Div(reg_a, reg_b));
       }
       "pop" => instrs.push(Pop),
-      "dst" => instrs.push(Dst),
       "drg" => {
         if splited.len() < 2 {
           error(ln, line, "Syntax error: valid syntax: `drg <register>`");
