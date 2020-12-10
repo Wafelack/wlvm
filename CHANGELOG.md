@@ -73,3 +73,7 @@
 # 0.3.9
 
 - Fixed jump problem (bad decrementation)
+
+# 0.3.10
+
+- Removed useless intstruction \`Dst`
