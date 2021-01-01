@@ -110,7 +110,7 @@ fn eval(
     }
 
     match instr {
-        Dmp => dump(stack, regs),
+        Dmp => dump(labels, stack, regs),
         Gto(i) => {
             if i < 0 {
                 panic!("ERR_ATEMPTED_TO_JUMP_TO_NEGATIVE_OPERATION_NUMBER");
@@ -328,7 +328,7 @@ fn main() {
                     std::process::exit(66);
                 } else {
                     let (tprog, tlab) = parse_file(&args[1]);
-                    prog = tprog;
+                    program = tprog;
                     labels = tlab;
                     program.push(Dmp);
                     program = program

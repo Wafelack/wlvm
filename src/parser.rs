@@ -54,7 +54,19 @@ pub fn parse_file(filename: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
 
         let num = match raw.parse::<i32>() {
           Ok(n) => n,
-          Err(_) => unimplemented!(),
+          Err(_) => {
+            if labels.contains_key(raw) {
+              labels[raw]
+            } else {
+              error(
+                ln,
+                line,
+                "Type error: gto has to take a valid integer or label !",
+              );
+              had_error = true;
+              continue;
+            }
+          }
         };
 
         instrs.push(Gto(num));
