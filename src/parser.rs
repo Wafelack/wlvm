@@ -1,4 +1,5 @@
-use crate::{Instructions, Instructions::*, Register::*};
+use crate::{Instruction, Instruction::*, Register::*};
+use std::collections::BTreeMap;
 use std::fs;
 
 fn error(line: usize, whr: &str, message: &str) {
@@ -7,21 +8,26 @@ fn error(line: usize, whr: &str, message: &str) {
   eprintln!("{}\n", message);
 }
 
-pub fn parse_file(filename: &str) -> Vec<Instructions> {
-  let mut instrs: Vec<Instructions> = vec![];
+pub fn parse_code(code: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
+  let mut instrs: Vec<Instruction> = vec![];
+  let mut labels: BTreeMap<String, i32> = BTreeMap::new();
   let mut had_error = false;
 
-  let fc = match fs::read_to_string(filename) {
-    Ok(s) => s,
-    Err(e) => {
-      eprintln!("Failed to read file");
-      eprintln!("{}", e);
-      std::process::exit(-1);
-    }
-  };
-  let lines = fc.split('\n').collect::<Vec<&str>>();
-
+  let lines = code.split('\n').collect::<Vec<&str>>();
   let mut ln = 0usize;
+
+  for line in &lines {
+    ln += 1;
+    let splited = line.split(' ').collect::<Vec<&str>>();
+    if line.starts_with(":") {
+      // Labels
+      labels.insert(splited[0].to_owned(), (ln) as i32); // Minus two because of human notation and Instruction launching (see main.rs)
+      continue;
+    }
+  }
+
+  ln = 0;
+
   for line in lines {
     ln += 1;
     let splited = line.split(' ').collect::<Vec<&str>>();
@@ -29,9 +35,45 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
     if line.starts_with(";") {
       continue;
     }
+    if line.starts_with(":") {
+      continue;
+    }
 
     match splited[0] {
       "dmp" => instrs.push(Dmp),
+      "gto" => {
+        if splited.len() < 2 {
+          error(
+            ln,
+            line,
+            "Syntax error: valid syntax: `gto <label|instruction>``",
+          );
+          had_error = true;
+          continue;
+        }
+
+        let raw = splited[1];
+
+        let num = match raw.parse::<i32>() {
+          Ok(n) => n,
+          Err(_) => {
+            println!("{:?}", labels);
+            if labels.contains_key(raw) {
+              labels[raw]
+            } else {
+              error(
+                ln,
+                line,
+                "Type error: gto has to take a valid integer or label !",
+              );
+              had_error = true;
+              continue;
+            }
+          }
+        };
+
+        instrs.push(Gto(num));
+      }
       "prt" => {
         if splited.len() < 2 {
           error(ln, line, "Syntax error: valid syntax: `prt <register>`");
@@ -510,20 +552,25 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
           continue;
         }
 
-        let instruction = match splited[1].parse::<u32>() {
+        let instruction = match splited[1].parse::<i32>() {
           Ok(i) => i,
           Err(_e) => {
-            error(
-              ln,
-              line,
-              &format!("Type error : {} is not valid integer >= 0", splited[1]),
-            );
-            had_error = true;
-            continue;
+            println!("{:?}", labels);
+            if labels.contains_key(splited[1]) {
+              labels[splited[1]]
+            } else {
+              error(
+                ln,
+                line,
+                "Type error: gto has to take a valid integer or label !",
+              );
+              had_error = true;
+              continue;
+            }
           }
         };
 
-        instrs.push(Jmp(instruction as i32));
+        instrs.push(Jmp(instruction));
       }
       "psh" => {
         if splited.len() < 2 {
@@ -952,10 +999,14 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
       }
       "hlt" => {
         instrs.push(Hlt);
-        return instrs;
+        return (instrs, labels);
       }
 
-      _ => (),
+      x => {
+        error(ln, line, &format!("Error: Unexpected token: {}", x));
+        had_error = true;
+        continue;
+      }
     }
   }
   if had_error {
@@ -963,5 +1014,5 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
     std::process::exit(-7);
   }
   instrs.push(Hlt);
-  instrs
+  (instrs, labels)
 }

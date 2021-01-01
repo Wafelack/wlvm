@@ -1,15 +1,17 @@
-use crate::Instructions::*;
+use crate::Instruction::*;
 use crate::Register::*;
+use std::collections::BTreeMap;
 use std::io;
 use std::io::Write;
 
 mod parser;
+mod tests;
 
 const STACK_SIZE: usize = 255;
 
 use parser::*;
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Instructions {
+pub enum Instruction {
     Psh(i32),
     Add(Register, Register),
     Mul(Register, Register),
@@ -20,6 +22,7 @@ pub enum Instructions {
     Hlt,
     Drg(Register),
     Dmp,
+    Gto(i32),
     Prt(Register), // Prints the ascii letter corresponding of the register's content
     Tee(Register, Register), // ==
     Tne(Register, Register), // !=
@@ -27,7 +30,7 @@ pub enum Instructions {
     Tmm(Register, Register), // >
     Tel(Register, Register), // <=
     Tem(Register, Register), // >=
-    Jmp(i32),       // Jump to line if Eq is true
+    Jmp(i32),      // Jump to line if Eq is true
 }
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Register {
@@ -60,11 +63,18 @@ fn reg_name(reg: i32) -> &'static str {
     }
 }
 
-fn fetch(program: &Vec<Instructions>, ip: usize) -> Instructions {
+fn fetch(program: &Vec<Instruction>, ip: usize) -> Instruction {
+    if ip >= program.len() {
+        panic!("ERR: ATTEMPTED_TO_GO_TO_UNDEFINED_INSTRUCTION");
+    }
     program[ip]
 }
 
-pub fn dump(stack: &Vec<i32>, regs: &[i32; NumOfRegisters as usize]) {
+pub fn dump(
+    labels: &BTreeMap<String, i32>,
+    stack: &Vec<i32>,
+    regs: &[i32; NumOfRegisters as usize],
+) {
     print!("[");
     for i in 0..(NumOfRegisters as usize) {
         print!("{}: {}, ", reg_name(i as i32), regs[i]);
@@ -79,10 +89,15 @@ pub fn dump(stack: &Vec<i32>, regs: &[i32; NumOfRegisters as usize]) {
             print!("{}, ", stack[i]);
         }
     }
+    println!("\nLabels: ");
+    for (label, instr) in labels {
+        println!("{} -> {}", label, instr + 2);
+    }
 }
 
 fn eval(
-    instr: Instructions,
+    labels: &BTreeMap<String, i32>,
+    instr: Instruction,
     running: &mut bool,
     stack: &mut Vec<i32>,
     regs: &mut [i32; NumOfRegisters as usize],
@@ -96,7 +111,21 @@ fn eval(
     }
 
     match instr {
-        Dmp => dump(stack, regs),
+        Dmp => dump(labels, stack, regs),
+        Gto(i) => {
+            if i < 0 {
+                panic!("ERR_ATEMPTED_TO_JUMP_TO_NEGATIVE_OPERATION_NUMBER");
+            }
+            if details {
+                println!("Went to {}", i - 1);
+            }
+            regs[Ip as usize] = i - 2;
+
+            // EXPLANATION :
+            // I substract 2 to the given number because of :
+            // First : I want to get one instruction back because If i go to instruction 7, instruction 8 will be executed
+            // Second: Human count does not start at 0, but 1
+        }
         Prt(reg) => {
             if (0..256).contains(&regs[reg as usize]) {
                 print!("{}", regs[reg as usize] as u8 as char);
@@ -150,7 +179,7 @@ fn eval(
                 if details {
                     println!("Goto {}", i);
                 }
-                regs[Ip as usize] = i - 1;
+                regs[Ip as usize] = i - 2;
             } else {
                 if details {
                     println!("None");
@@ -259,7 +288,8 @@ fn is_present(args: &Vec<String>, to_search: &str) -> bool {
 fn main() {
     let args = std::env::args().skip(1).collect::<Vec<String>>();
 
-    let mut program: Vec<Instructions> = vec![];
+    let mut program: Vec<Instruction> = vec![];
+    let mut labels: BTreeMap<String, i32> = BTreeMap::new();
 
     let mut details = false;
 
@@ -274,7 +304,18 @@ fn main() {
                     eprintln!("Error: no input files");
                     std::process::exit(66);
                 } else {
-                    program = parse_file(&args[1]);
+                    let code = match std::fs::read_to_string(&args[1]) {
+                        Ok(c) => c,
+                        Err(e) => panic!("Failed to read file !\nDebug info: {}", e),
+                    };
+                    let (tprog, tlabels) = parse_code(&code);
+                    /*
+                    Using that because of :
+                                        destructuring assignments are not currently supported
+                    note: for more information, see https://github.com/rust-lang/rfcs/issues/37
+                                        */
+                    program = tprog;
+                    labels = tlabels;
                 }
                 if is_present(&args, "--instructions") || is_present(&args, "-i") {
                     println!("{:?}\n==============================", program);
@@ -291,7 +332,13 @@ fn main() {
                     eprintln!("Error: no input files");
                     std::process::exit(66);
                 } else {
-                    program = parse_file(&args[1]);
+                    let code = match std::fs::read_to_string(&args[1]) {
+                        Ok(c) => c,
+                        Err(e) => panic!("Failed to read file !\nDebug info: {}", e),
+                    };
+                    let (tprog, tlab) = parse_code(&code);
+                    program = tprog;
+                    labels = tlab;
                     program.push(Dmp);
                     program = program
                         .iter()
@@ -311,7 +358,14 @@ fn main() {
 
     while running {
         let instr = fetch(&program, registers[6] as usize);
-        eval(instr, &mut running, &mut stack, &mut registers, details);
+        eval(
+            &labels,
+            instr,
+            &mut running,
+            &mut stack,
+            &mut registers,
+            details,
+        );
         registers[6] += 1;
     }
 }
@@ -325,210 +379,12 @@ fn setup_environment() -> (Vec<i32>, [i32; NumOfRegisters as usize], bool) {
     (stack, registers, true)
 }
 
-fn is_valid(instr: Instructions) -> bool {
+fn is_valid(instr: Instruction) -> bool {
     match instr {
         Prt(_) => false,
         Drg(_) => false,
         Dmp => false,
         Hlt => false,
         _ => true,
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn validation() {
-        assert!(!is_valid(Prt(A)));
-        assert!(!is_valid(Drg(A)));
-        assert!(!is_valid(Dmp));
-        assert!(!is_valid(Hlt));
-    }
-
-    #[test]
-    fn stack() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(stack[0], 5);
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(stack[1], 8);
-        eval(Pop, &mut running, &mut stack, &mut registers, false);
-        eval(Pop, &mut running, &mut stack, &mut registers, false);
-        eval(Psh(14), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(stack[0], 14);
-    }
-
-    #[test]
-    fn registers_moving() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(registers[A as usize], 5);
-        eval(Mov(B, A), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(registers[B as usize], 5);
-    }
-
-    #[test]
-    fn registers_add() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Add(A, B), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(registers[A as usize], 11);
-    }
-
-    #[test]
-    fn registers_sub() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Sub(A, B), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(registers[A as usize], -1);
-    }
-
-    #[test]
-    fn registers_mul() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Mul(A, B), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(registers[A as usize], 30);
-    }
-
-    #[test]
-    fn registers_div() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(10), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Div(A, B), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(registers[A as usize], 2);
-    }
-
-    #[test]
-    fn halt_program() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(10), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Div(A, B), &mut running, &mut stack, &mut registers, false);
-
-        eval(Hlt, &mut running, &mut stack, &mut registers, false);
-
-        assert!(!running);
-    }
-
-    #[test]
-    fn equality() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-
-        eval(Tee(A, B), &mut running, &mut stack, &mut registers, false);
-
-        assert_eq!(registers[Eq as usize], 1);
-    }
-    #[test]
-    fn non_equality() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-
-        eval(Tne(A, B), &mut running, &mut stack, &mut registers, false);
-
-        assert_eq!(registers[Eq as usize], 1);
-    }
-
-    #[test]
-    fn lower_than() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-
-        eval(Tll(A, B), &mut running, &mut stack, &mut registers, false);
-
-        assert_eq!(registers[Eq as usize], 1);
-    }
-
-    #[test]
-    fn greater_than() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-
-        eval(Tmm(A, B), &mut running, &mut stack, &mut registers, false);
-
-        assert_eq!(registers[Eq as usize], 1);
-    }
-    #[test]
-    fn greater_or_equal() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-
-        eval(Tem(A, B), &mut running, &mut stack, &mut registers, false);
-
-        assert_eq!(registers[Eq as usize], 1);
-    }
-
-    #[test]
-    fn lower_or_equal() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-
-        eval(Tel(A, B), &mut running, &mut stack, &mut registers, false);
-
-        assert_eq!(registers[Eq as usize], 1);
-    }
-
-    #[test]
-    fn jump() {
-        let (mut stack, mut registers, mut running) = setup_environment();
-
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-
-        eval(Tel(A, B), &mut running, &mut stack, &mut registers, false);
-
-        eval(Jmp(3), &mut running, &mut stack, &mut registers, false);
-        assert_eq!(registers[Ip as usize], 2);
     }
 }
