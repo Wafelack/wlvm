@@ -78,6 +78,12 @@
 
 - Removed useless intstruction \`Dst`
 
+# 0.3.11
+
+- Added labels
+- Fixed jmp
+
 # 0.4.10
 
 - Added repl
+
