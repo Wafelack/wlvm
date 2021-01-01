@@ -1,4 +1,4 @@
-use crate::Instructions::*;
+use crate::Instruction::*;
 use crate::Register::*;
 use std::collections::BTreeMap;
 use std::io;
@@ -10,7 +10,7 @@ const STACK_SIZE: usize = 255;
 
 use parser::*;
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Instructions {
+pub enum Instruction {
     Psh(i32),
     Add(Register, Register),
     Mul(Register, Register),
@@ -62,14 +62,18 @@ fn reg_name(reg: i32) -> &'static str {
     }
 }
 
-fn fetch(program: &Vec<Instructions>, ip: usize) -> Instructions {
+fn fetch(program: &Vec<Instruction>, ip: usize) -> Instruction {
     if ip >= program.len() {
         panic!("ERR: ATTEMPTED_TO_GO_TO_UNDEFINED_INSTRUCTION");
     }
     program[ip]
 }
 
-pub fn dump(stack: &Vec<i32>, regs: &[i32; NumOfRegisters as usize]) {
+pub fn dump(
+    labels: BTreeMap<String, i32>,
+    stack: &Vec<i32>,
+    regs: &[i32; NumOfRegisters as usize],
+) {
     print!("[");
     for i in 0..(NumOfRegisters as usize) {
         print!("{}: {}, ", reg_name(i as i32), regs[i]);
@@ -84,11 +88,15 @@ pub fn dump(stack: &Vec<i32>, regs: &[i32; NumOfRegisters as usize]) {
             print!("{}, ", stack[i]);
         }
     }
+    println!("\nLabels: ");
+    for (label, instr) in labels {
+        println!("{} -> {}", label, instr + 2);
+    }
 }
 
 fn eval(
     labels: BTreeMap<String, i32>,
-    instr: Instructions,
+    instr: Instruction,
     running: &mut bool,
     stack: &mut Vec<i32>,
     regs: &mut [i32; NumOfRegisters as usize],
@@ -279,7 +287,7 @@ fn is_present(args: &Vec<String>, to_search: &str) -> bool {
 fn main() {
     let args = std::env::args().skip(1).collect::<Vec<String>>();
 
-    let mut program: Vec<Instructions> = vec![];
+    let mut program: Vec<Instruction> = vec![];
     let mut labels: BTreeMap<String, i32> = BTreeMap::new();
 
     let mut details = false;
@@ -362,7 +370,7 @@ fn setup_environment() -> (Vec<i32>, [i32; NumOfRegisters as usize], bool) {
     (stack, registers, true)
 }
 
-fn is_valid(instr: Instructions) -> bool {
+fn is_valid(instr: Instruction) -> bool {
     match instr {
         Prt(_) => false,
         Drg(_) => false,

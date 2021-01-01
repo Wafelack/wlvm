@@ -1,4 +1,4 @@
-use crate::{Instructions, Instructions::*, Register::*};
+use crate::{Instruction, Instruction::*, Register::*};
 use std::collections::BTreeMap;
 use std::fs;
 
@@ -8,8 +8,8 @@ fn error(line: usize, whr: &str, message: &str) {
   eprintln!("{}\n", message);
 }
 
-pub fn parse_file(filename: &str) -> (Vec<Instructions>, BTreeMap<String, i32>) {
-  let mut instrs: Vec<Instructions> = vec![];
+pub fn parse_file(filename: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
+  let mut instrs: Vec<Instruction> = vec![];
   let mut labels: BTreeMap<String, i32> = BTreeMap::new();
   let mut had_error = false;
 
@@ -33,7 +33,7 @@ pub fn parse_file(filename: &str) -> (Vec<Instructions>, BTreeMap<String, i32>) 
     }
     if line.starts_with(":") {
       // Labels
-      labels.insert(splited[0].to_owned(), (instrs.len() - 2) as i32); // Minus two because of human notation and Instructions launching (see main.rs)
+      labels.insert(splited[0].to_owned(), (instrs.len() - 2) as i32); // Minus two because of human notation and Instruction launching (see main.rs)
       continue;
     }
 
