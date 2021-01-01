@@ -77,3 +77,8 @@
 # 0.3.10
 
 - Removed useless intstruction \`Dst`
+
+# 0.3.11
+
+- Added labels
+- Fixed jmp
