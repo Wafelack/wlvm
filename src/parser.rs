@@ -8,20 +8,12 @@ fn error(line: usize, whr: &str, message: &str) {
   eprintln!("{}\n", message);
 }
 
-pub fn parse_file(filename: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
+pub fn parse_code(code: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
   let mut instrs: Vec<Instruction> = vec![];
   let mut labels: BTreeMap<String, i32> = BTreeMap::new();
   let mut had_error = false;
 
-  let fc = match fs::read_to_string(filename) {
-    Ok(s) => s,
-    Err(e) => {
-      eprintln!("Failed to read file");
-      eprintln!("{}", e);
-      std::process::exit(-1);
-    }
-  };
-  let lines = fc.split('\n').collect::<Vec<&str>>();
+  let lines = code.split('\n').collect::<Vec<&str>>();
   let mut ln = 0usize;
 
   for line in &lines {

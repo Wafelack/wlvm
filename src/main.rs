@@ -303,7 +303,11 @@ fn main() {
                     eprintln!("Error: no input files");
                     std::process::exit(66);
                 } else {
-                    let (tprog, tlabels) = parse_file(&args[1]);
+                    let code = match std::fs::read_to_string(&args[1]) {
+                        Ok(c) => c,
+                        Err(e) => panic!("Failed to read file !\nDebug info: {}", e),
+                    };
+                    let (tprog, tlabels) = parse_code(&code);
                     /*
                     Using that because of :
                                         destructuring assignments are not currently supported
@@ -327,7 +331,11 @@ fn main() {
                     eprintln!("Error: no input files");
                     std::process::exit(66);
                 } else {
-                    let (tprog, tlab) = parse_file(&args[1]);
+                    let code = match std::fs::read_to_string(&args[1]) {
+                        Ok(c) => c,
+                        Err(e) => panic!("Failed to read file !\nDebug info: {}", e),
+                    };
+                    let (tprog, tlab) = parse_code(&code);
                     program = tprog;
                     labels = tlab;
                     program.push(Dmp);
@@ -1092,5 +1100,28 @@ mod test {
             false,
         );
         assert_eq!(registers[Ip as usize], 2);
+    }
+    #[test]
+    fn labels() {
+        let (mut stack, mut registers, mut running) = setup_environment();
+
+        let (program, labels) = parse_code(
+            "psh 4\nmov a st\npsh 7\nmov b st\ngto :avoid_adding\nadd a b\n:avoid_adding\nhlt",
+        );
+
+        while running {
+            let instr = fetch(&program, registers[6] as usize);
+            eval(
+                &labels,
+                instr,
+                &mut running,
+                &mut stack,
+                &mut registers,
+                false,
+            );
+            registers[6] += 1;
+        }
+
+        assert_eq!(registers[A as usize], 4);
     }
 }
