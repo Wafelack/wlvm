@@ -285,6 +285,52 @@ fn is_present(args: &Vec<String>, to_search: &str) -> bool {
     false
 }
 
+fn repl() {
+    let mut program: Vec<Instruction> = vec![];
+    let mut labels: BTreeMap<String, i32> = BTreeMap::new();
+
+    println!(
+        "wlvm REPL version {} by {}",
+        env!("CARGO_PKG_VERSION"),
+        env!("CARGO_PKG_AUTHORS")
+    );
+    println!("Press q to quit");
+
+    let (mut stack, mut registers, mut running) = setup_environment();
+
+    while running {
+        print!("(wlvm:{}) ", registers[6] + 1);
+        std::io::stdout().flush().unwrap();
+        let mut input = String::new();
+        std::io::stdin().read_line(&mut input).unwrap();
+
+        if &input.trim() == &"q" || &input.trim() == &"Q" {
+            std::process::exit(0);
+        }
+
+        let (mut current_prog, labs) = parse_code(&input.trim(), false);
+        labels.extend(labs);
+        current_prog.pop();
+        program.extend(&current_prog); // remove hlt instruction
+
+        if *&current_prog.is_empty() {
+            continue;
+        }
+
+        let instr = fetch(&program, registers[6] as usize);
+        eval(
+            &labels,
+            instr,
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+
+        registers[6] += 1;
+    }
+}
+
 fn main() {
     let args = std::env::args().skip(1).collect::<Vec<String>>();
 
@@ -294,7 +340,7 @@ fn main() {
     let mut details = false;
 
     if args.len() < 1 {
-        help();
+        repl();
     } else {
         if args[0] == "run" {
             if args.len() < 2 {
@@ -308,7 +354,7 @@ fn main() {
                         Ok(c) => c,
                         Err(e) => panic!("Failed to read file !\nDebug info: {}", e),
                     };
-                    let (tprog, tlabels) = parse_code(&code);
+                    let (tprog, tlabels) = parse_code(&code, true);
                     /*
                     Using that because of :
                                         destructuring assignments are not currently supported
@@ -336,7 +382,7 @@ fn main() {
                         Ok(c) => c,
                         Err(e) => panic!("Failed to read file !\nDebug info: {}", e),
                     };
-                    let (tprog, tlab) = parse_code(&code);
+                    let (tprog, tlab) = parse_code(&code, true);
                     program = tprog;
                     labels = tlab;
                     program.push(Dmp);

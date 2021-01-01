@@ -719,6 +719,7 @@ mod test {
 
     let (program, labels) = parse_code(
       "psh 4\nmov a st\npsh 7\nmov b st\ngto :avoid_adding\nadd a b\n:avoid_adding\nhlt",
+      true,
     );
 
     while running {
