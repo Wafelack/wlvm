@@ -4,6 +4,7 @@ psh 6
 mov b st
 add a b
 drg a
-gto 8
+gto :dumping
+:dumping
 drg b
 hlt

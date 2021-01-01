@@ -22,8 +22,20 @@ pub fn parse_file(filename: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
     }
   };
   let lines = fc.split('\n').collect::<Vec<&str>>();
-
   let mut ln = 0usize;
+
+  for line in &lines {
+    ln += 1;
+    let splited = line.split(' ').collect::<Vec<&str>>();
+    if line.starts_with(":") {
+      // Labels
+      labels.insert(splited[0].to_owned(), (ln) as i32); // Minus two because of human notation and Instruction launching (see main.rs)
+      continue;
+    }
+  }
+
+  ln = 0;
+
   for line in lines {
     ln += 1;
     let splited = line.split(' ').collect::<Vec<&str>>();
@@ -32,8 +44,6 @@ pub fn parse_file(filename: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
       continue;
     }
     if line.starts_with(":") {
-      // Labels
-      labels.insert(splited[0].to_owned(), (instrs.len() - 2) as i32); // Minus two because of human notation and Instruction launching (see main.rs)
       continue;
     }
 
@@ -55,6 +65,7 @@ pub fn parse_file(filename: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
         let num = match raw.parse::<i32>() {
           Ok(n) => n,
           Err(_) => {
+            println!("{:?}", labels);
             if labels.contains_key(raw) {
               labels[raw]
             } else {
@@ -994,7 +1005,11 @@ pub fn parse_file(filename: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
         return (instrs, labels);
       }
 
-      _ => (),
+      x => {
+        error(ln, line, &format!("Error: Unexpected token: {}", x));
+        had_error = true;
+        continue;
+      }
     }
   }
   if had_error {
