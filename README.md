@@ -6,7 +6,7 @@ Virtual machine with associated language written in Rust
 
 ## Installation
 
-`cargo install wlvm`
+`cargo install wlvm` (https://crates.io/crates/wlvm)
 
 ## Build
 
@@ -18,6 +18,10 @@ cargo test
 ```
 
 ## Usage
+
+### Run repl
+
+`wlvm`
 
 ### Run program
 

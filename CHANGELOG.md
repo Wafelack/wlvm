@@ -77,3 +77,7 @@
 # 0.3.10
 
 - Removed useless intstruction \`Dst`
+
+# 0.4.10
+
+- Added repl
