@@ -20,6 +20,7 @@ pub enum Instructions {
     Hlt,
     Drg(Register),
     Dmp,
+    Gto(i32),
     Prt(Register), // Prints the ascii letter corresponding of the register's content
     Tee(Register, Register), // ==
     Tne(Register, Register), // !=
@@ -27,7 +28,7 @@ pub enum Instructions {
     Tmm(Register, Register), // >
     Tel(Register, Register), // <=
     Tem(Register, Register), // >=
-    Jmp(i32),       // Jump to line if Eq is true
+    Jmp(i32),      // Jump to line if Eq is true
 }
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Register {
@@ -97,6 +98,15 @@ fn eval(
 
     match instr {
         Dmp => dump(stack, regs),
+        Gto(i) => {
+            if i < 0 {
+                panic!("ERR_ATEMPTED_TO_JUMP_TO_NEGATIVE_OPERATION_NUMBER");
+            }
+            if details {
+                println!("Went to {}", i);
+            }
+            regs[Ip as usize] = i - 1;
+        }
         Prt(reg) => {
             if (0..256).contains(&regs[reg as usize]) {
                 print!("{}", regs[reg as usize] as u8 as char);
