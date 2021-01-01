@@ -32,6 +32,26 @@ pub fn parse_file(filename: &str) -> Vec<Instructions> {
 
     match splited[0] {
       "dmp" => instrs.push(Dmp),
+      "gto" => {
+        if splited.len() < 2 {
+          error(
+            ln,
+            line,
+            "Syntax error: valid syntax: `gto <label|instruction>``",
+          );
+          had_error = true;
+          continue;
+        }
+
+        let raw = splited[1];
+
+        let num = match raw.parse::<i32>() {
+          Ok(n) => n,
+          Err(_) => unimplemented!(),
+        };
+
+        instrs.push(Gto(num));
+      }
       "prt" => {
         if splited.len() < 2 {
           error(ln, line, "Syntax error: valid syntax: `prt <register>`");

@@ -62,6 +62,9 @@ fn reg_name(reg: i32) -> &'static str {
 }
 
 fn fetch(program: &Vec<Instructions>, ip: usize) -> Instructions {
+    if ip >= program.len() {
+        panic!("ERR: ATTEMPTED_TO_GO_TO_UNDEFINED_INSTRUCTION");
+    }
     program[ip]
 }
 
@@ -103,9 +106,14 @@ fn eval(
                 panic!("ERR_ATEMPTED_TO_JUMP_TO_NEGATIVE_OPERATION_NUMBER");
             }
             if details {
-                println!("Went to {}", i);
+                println!("Went to {}", i - 1);
             }
-            regs[Ip as usize] = i - 1;
+            regs[Ip as usize] = i - 2;
+
+            // EXPLANATION :
+            // I substract 2 to the given number because of :
+            // First : I want to get one instruction back because If i go to instruction 7, instruction 8 will be executed
+            // Second: Human count does not start at 0, but 1
         }
         Prt(reg) => {
             if (0..256).contains(&regs[reg as usize]) {
@@ -160,7 +168,7 @@ fn eval(
                 if details {
                     println!("Goto {}", i);
                 }
-                regs[Ip as usize] = i - 1;
+                regs[Ip as usize] = i - 2;
             } else {
                 if details {
                     println!("None");
