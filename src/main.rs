@@ -70,7 +70,7 @@ fn fetch(program: &Vec<Instruction>, ip: usize) -> Instruction {
 }
 
 pub fn dump(
-    labels: BTreeMap<String, i32>,
+    labels: &BTreeMap<String, i32>,
     stack: &Vec<i32>,
     regs: &[i32; NumOfRegisters as usize],
 ) {
@@ -95,7 +95,7 @@ pub fn dump(
 }
 
 fn eval(
-    labels: BTreeMap<String, i32>,
+    labels: &BTreeMap<String, i32>,
     instr: Instruction,
     running: &mut bool,
     stack: &mut Vec<i32>,
@@ -350,7 +350,7 @@ fn main() {
     while running {
         let instr = fetch(&program, registers[6] as usize);
         eval(
-            labels,
+            &labels,
             instr,
             &mut running,
             &mut stack,
@@ -396,13 +396,49 @@ mod test {
     fn stack() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(stack[0], 5);
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Psh(8),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(stack[1], 8);
-        eval(Pop, &mut running, &mut stack, &mut registers, false);
-        eval(Pop, &mut running, &mut stack, &mut registers, false);
-        eval(Psh(14), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Pop,
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Pop,
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(14),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(stack[0], 14);
     }
 
@@ -410,10 +446,33 @@ mod test {
     fn registers_moving() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
+
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(registers[A as usize], 5);
-        eval(Mov(B, A), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Mov(B, A),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(registers[B as usize], 5);
     }
 
@@ -421,11 +480,48 @@ mod test {
     fn registers_add() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Add(A, B), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
+
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(6),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Add(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(registers[A as usize], 11);
     }
 
@@ -433,11 +529,48 @@ mod test {
     fn registers_sub() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Sub(A, B), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
+
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(6),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Sub(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(registers[A as usize], -1);
     }
 
@@ -445,11 +578,48 @@ mod test {
     fn registers_mul() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Mul(A, B), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
+
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(6),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mul(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(registers[A as usize], 30);
     }
 
@@ -457,11 +627,48 @@ mod test {
     fn registers_div() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(10), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Div(A, B), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
+
+        eval(
+            &labels,
+            Psh(10),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Div(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(registers[A as usize], 2);
     }
 
@@ -469,13 +676,57 @@ mod test {
     fn halt_program() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(10), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
-        eval(Div(A, B), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
 
-        eval(Hlt, &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Psh(10),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Div(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+
+        eval(
+            &labels,
+            Hlt,
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
 
         assert!(!running);
     }
@@ -484,12 +735,49 @@ mod test {
     fn equality() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
 
-        eval(Tee(A, B), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+
+        eval(
+            &labels,
+            Tee(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
 
         assert_eq!(registers[Eq as usize], 1);
     }
@@ -497,12 +785,49 @@ mod test {
     fn non_equality() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
 
-        eval(Tne(A, B), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(6),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+
+        eval(
+            &labels,
+            Tne(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
 
         assert_eq!(registers[Eq as usize], 1);
     }
@@ -511,12 +836,49 @@ mod test {
     fn lower_than() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(5), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
 
-        eval(Tll(A, B), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Psh(5),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(6),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+
+        eval(
+            &labels,
+            Tll(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
 
         assert_eq!(registers[Eq as usize], 1);
     }
@@ -525,12 +887,49 @@ mod test {
     fn greater_than() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(6), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
 
-        eval(Tmm(A, B), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Psh(8),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(6),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+
+        eval(
+            &labels,
+            Tmm(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
 
         assert_eq!(registers[Eq as usize], 1);
     }
@@ -538,12 +937,49 @@ mod test {
     fn greater_or_equal() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
 
-        eval(Tem(A, B), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Psh(8),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(8),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+
+        eval(
+            &labels,
+            Tem(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
 
         assert_eq!(registers[Eq as usize], 1);
     }
@@ -552,12 +988,49 @@ mod test {
     fn lower_or_equal() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
 
-        eval(Tel(A, B), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Psh(8),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(8),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+
+        eval(
+            &labels,
+            Tel(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
 
         assert_eq!(registers[Eq as usize], 1);
     }
@@ -566,14 +1039,58 @@ mod test {
     fn jump() {
         let (mut stack, mut registers, mut running) = setup_environment();
 
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(A, St), &mut running, &mut stack, &mut registers, false);
-        eval(Psh(8), &mut running, &mut stack, &mut registers, false);
-        eval(Mov(B, St), &mut running, &mut stack, &mut registers, false);
+        let labels: BTreeMap<String, i32> = BTreeMap::new();
 
-        eval(Tel(A, B), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Psh(8),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(A, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Psh(8),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+        eval(
+            &labels,
+            Mov(B, St),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
 
-        eval(Jmp(3), &mut running, &mut stack, &mut registers, false);
+        eval(
+            &labels,
+            Tel(A, B),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
+
+        eval(
+            &labels,
+            Jmp(3),
+            &mut running,
+            &mut stack,
+            &mut registers,
+            false,
+        );
         assert_eq!(registers[Ip as usize], 2);
     }
 }
