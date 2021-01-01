@@ -560,20 +560,25 @@ pub fn parse_file(filename: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
           continue;
         }
 
-        let instruction = match splited[1].parse::<u32>() {
+        let instruction = match splited[1].parse::<i32>() {
           Ok(i) => i,
           Err(_e) => {
-            error(
-              ln,
-              line,
-              &format!("Type error : {} is not valid integer >= 0", splited[1]),
-            );
-            had_error = true;
-            continue;
+            println!("{:?}", labels);
+            if labels.contains_key(splited[1]) {
+              labels[splited[1]]
+            } else {
+              error(
+                ln,
+                line,
+                "Type error: gto has to take a valid integer or label !",
+              );
+              had_error = true;
+              continue;
+            }
           }
         };
 
-        instrs.push(Jmp(instruction as i32));
+        instrs.push(Jmp(instruction));
       }
       "psh" => {
         if splited.len() < 2 {
