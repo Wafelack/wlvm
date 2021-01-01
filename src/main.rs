@@ -1,5 +1,6 @@
 use crate::Instructions::*;
 use crate::Register::*;
+use std::collections::BTreeMap;
 use std::io;
 use std::io::Write;
 
@@ -86,6 +87,7 @@ pub fn dump(stack: &Vec<i32>, regs: &[i32; NumOfRegisters as usize]) {
 }
 
 fn eval(
+    labels: BTreeMap<String, i32>,
     instr: Instructions,
     running: &mut bool,
     stack: &mut Vec<i32>,
@@ -278,6 +280,7 @@ fn main() {
     let args = std::env::args().skip(1).collect::<Vec<String>>();
 
     let mut program: Vec<Instructions> = vec![];
+    let mut labels: BTreeMap<String, i32> = BTreeMap::new();
 
     let mut details = false;
 
@@ -292,7 +295,14 @@ fn main() {
                     eprintln!("Error: no input files");
                     std::process::exit(66);
                 } else {
-                    program = parse_file(&args[1]);
+                    let (tprog, tlabels) = parse_file(&args[1]);
+                    /*
+                    Using that because of :
+                                        destructuring assignments are not currently supported
+                    note: for more information, see https://github.com/rust-lang/rfcs/issues/37
+                                        */
+                    program = tprog;
+                    labels = tlabels;
                 }
                 if is_present(&args, "--instructions") || is_present(&args, "-i") {
                     println!("{:?}\n==============================", program);
@@ -309,7 +319,9 @@ fn main() {
                     eprintln!("Error: no input files");
                     std::process::exit(66);
                 } else {
-                    program = parse_file(&args[1]);
+                    let (tprog, tlab) = parse_file(&args[1]);
+                    prog = tprog;
+                    labels = tlab;
                     program.push(Dmp);
                     program = program
                         .iter()
@@ -329,7 +341,14 @@ fn main() {
 
     while running {
         let instr = fetch(&program, registers[6] as usize);
-        eval(instr, &mut running, &mut stack, &mut registers, details);
+        eval(
+            labels,
+            instr,
+            &mut running,
+            &mut stack,
+            &mut registers,
+            details,
+        );
         registers[6] += 1;
     }
 }
