@@ -39,6 +39,10 @@ pub fn parse_code(code: &str, quit: bool) -> (Vec<Instruction>, BTreeMap<String,
       continue;
     }
 
+    if line.is_empty() {
+      continue;
+    }
+
     match splited[0] {
       "dmp" => instrs.push(Dmp),
       "gto" => {
