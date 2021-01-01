@@ -1119,6 +1119,7 @@ mod test {
                 &mut registers,
                 false,
             );
+
             registers[6] += 1;
         }
 
