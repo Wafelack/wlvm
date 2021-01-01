@@ -8,7 +8,7 @@ fn error(line: usize, whr: &str, message: &str) {
   eprintln!("{}\n", message);
 }
 
-pub fn parse_code(code: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
+pub fn parse_code(code: &str, quit: bool) -> (Vec<Instruction>, BTreeMap<String, i32>) {
   let mut instrs: Vec<Instruction> = vec![];
   let mut labels: BTreeMap<String, i32> = BTreeMap::new();
   let mut had_error = false;
@@ -1011,7 +1011,9 @@ pub fn parse_code(code: &str) -> (Vec<Instruction>, BTreeMap<String, i32>) {
   }
   if had_error {
     eprintln!("Aborting due to previous errors");
-    std::process::exit(-7);
+    if quit {
+      std::process::exit(-7);
+    }
   }
   instrs.push(Hlt);
   (instrs, labels)
